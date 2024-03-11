@@ -1,0 +1,154 @@
+
+
+
+
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Document</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
+    </head>
+    <style>
+
+        *{
+            margin:0;
+            padding: 0;
+        }
+        .main{
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+        }
+        .signform{
+            height: 76vh;
+            border-radius: 10px;
+            width: 32vw;
+            border:1px solid lightgray;
+            position: relative;
+            font-family: 'Poppins', sans-serif;
+        }
+        .emailfield{
+            background-color: transparent;
+            color: black;
+            font-size: 16px;
+            height: 40px;
+            width: 80%;
+            border: 0.5px solid lightgray;
+            border-radius: 10px;
+            margin: 10px;
+            padding: 0 10px;
+        }
+        .e1{
+            margin-top: 30px;
+        }
+        .e2{
+            margin-bottom: 20px;
+        }
+        .logodiv{
+            height: 18%;
+            width: 20%;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        .logodiv img{
+            height: 100%;
+            width: 100%;
+
+        }
+        .details{
+            position: absolute;
+            top:20%;
+            /* border:1px solid black; */
+            width: 100%;
+            height: 80%;
+            text-align: center;
+        }
+        a{
+            text-decoration: none;
+        }
+        a:link{
+            color:white;
+
+        }
+        .signin{
+            padding: 9px;
+            color:white;
+            background-color: rgb(31, 123, 234);
+            border-radius: 5px;
+            border:0 transparent;
+            position: absolute;
+            bottom: 10%;
+            right: 10%;
+        }
+        .signin a{
+            color: white;
+        }
+        .createaccount{
+            position: absolute;
+            bottom: 11%;
+            left: 10%
+        }
+
+
+
+
+
+
+
+    </style>
+    <body>
+    <div class="main">
+        <div class="signform">
+            <div class="logodiv">
+                <img src="./images/logo.png" alt="logo">
+            </div>
+
+            <div class="details">
+                <p style=" font-size: 22px;">Sign In</p>
+                <br>
+                <p>Use Your Social Hub Account</p>
+                <form action="/user/createSession" method="post">
+                    <input type="text" class="emailfield e1" name="userEmailId" placeholder="Enter Your Email Id : ">
+                    <input type="text" class="emailfield e2" name="userPassword" placeholder="Enter Your Password : ">
+                    <button type="submit" class="signin">SIGN IN</button>
+
+
+                </form>
+
+                <p style="text-align: left; margin-left: 10%; font-size: 12px; margin-top: -2%;">
+                    <a href="/user/forget-password">Forget Password</a>
+                </p>
+                <br>
+                <p>or</p>
+                <br>
+
+
+
+                <div class="googlesign">
+                    <a href="/user/auth/google">Sign In With Google</a>
+                </div>
+                <div class="createaccount">
+                    <a href="/user/signUp">Create account</a>
+                </div>
+
+
+
+
+
+
+            </div>
+
+
+        </div>
+    </div>
+
+    </body>
+    </html>

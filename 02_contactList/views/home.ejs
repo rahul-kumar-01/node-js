@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./css/home.css">
+    <title>Document</title>
+</head>
+<body>
+   <h1>Contact List</h1>
+
+   <ul>
+        <% for (let i of contactList ) { %>
+            <li>
+                <p> <%= i.name  %></p>
+                <p> <%= i.phoneNo %> </p>
+                <a href="./deleteContact/?phone=<%=i.phoneNo%>">
+                    <div class="delete">
+                    
+                    </div>
+                </a>
+                
+            </li>
+
+        <% } %> 
+   </ul>
+
+   <form action="./createContact" method="post">
+        <input type="text" name="name" required placeholder="Enter your name">
+        <input type="text" name="phoneNo" required placeholder="Enter your phoneNo">
+        <button type="submit">SUBMIT</button>
+    </form>
+
+
+
+   
+   
+</body>
+</html>
+
+<!-- 
+param 
+./deleteContact/rahul
+query param
+./deleteContact/?phone=i.phone & name = i.name  
+-->

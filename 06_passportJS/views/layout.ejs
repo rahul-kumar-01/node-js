@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./css/layout.css">
+    <%- style %>
+</head>
+<body>
+
+    <%- include('_header'); -%>
+
+    <%- body %>                          <!--  whatever include in home.ejs come here  -->
+
+    <%- include('_footer'); -%>
+
+    <%- script %>      
+
+     <!-- style and script put home.ejs style and script here , if we don't use this then script and 
+     link tag place inside the body that looks and nice  but it may work -->
+
+</body>
+</html>
+

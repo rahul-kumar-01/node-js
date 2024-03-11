@@ -1,0 +1,39 @@
+
+
+.sign-in-form{
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border:1px solid black;
+    border-radius: 20px;
+    padding: 20px;
+
+}
+.sign-in-form input{
+    display: flex;
+    flex-direction: row;
+    padding: 8px;
+    margin: 15px;
+    align-items: center;
+    justify-content: center;
+    
+    outline: none;
+    border-style: none;
+
+    font-size: 1rem;
+    height: 2.5rem;
+    width: 15rem;
+    border-radius: 3rem;
+
+}
+
+.sign-in-form input:last-child{
+    height: 2rem;
+    width: 5rem;
+    margin-left: 30%;
+}
+
+

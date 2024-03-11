@@ -1,0 +1,25 @@
+<li>
+
+    <p class="comment-style">
+        
+        <% if(locals.user && post.userId.id == locals.user.id){ %>
+            <small>
+                <a href="/comment/destroy/<%=comment.id%>" style="color: red;">X</a>
+            </small>
+        <% } else if( (locals.user && locals.user.id == comment.userId.id) ){ %>
+            <small>
+                <a href="/comment/destroy/<%=comment.id%>" style="color: red;">X</a>
+            </small>
+        <% } %>
+        
+
+        <%= comment.content %>
+        <br>
+        <small>
+            <%= comment.userId.userName %>
+        </small>
+            <br>
+    </p>
+</li>
+
+

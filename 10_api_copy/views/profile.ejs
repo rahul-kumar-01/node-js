@@ -1,0 +1,20 @@
+<img src=" <%= user.avatar %>" alt=" <%= user.userName %>" width="50px" height="50px">
+
+<% if(user.id == profile_user.id){ %>
+    <!-- no need to print  -->
+
+    <form action="/user/update/<%=profile_user.id%>" enctype="multipart/form-data" method="post">
+        <input type="text" name="userName" placeholder="Enter your name : " value="<%=profile_user.name%>" required>
+        <input type="text" name="userEmailId" placeholder="Enter your email: " value="<%=profile_user.email%>" required>
+        <input type="file" name="avatar" placeholder="Profile Picture">
+        <input type="submit" value="Update">
+    </form>
+
+<% } %>
+ 
+
+<p>Name : <%= profile_user.userName %> </p>
+<p>Email: <%= profile_user.userEmailId %></p>
+
+
+

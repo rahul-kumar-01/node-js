@@ -1,0 +1,13 @@
+<div class="header">
+    <h2 class="codeial"> Codeial </h2>
+    
+    <% if(locals.user){ %>
+        <a href="/user/profile/<%= user._id %>" class="signUpLink" style="text-transform: uppercase;">  <%= user.userName %></a>
+    <% } %>
+    <a href="/user/signIn" class="signInLink">SIGN IN</a>
+    <a href="/user/signUp" class="signUpLink">SIGN UP</a>
+    <a href="/user/signOut" class="signUpLink">SIGN OUT</a>
+</div>
+
+
+

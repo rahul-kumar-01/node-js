@@ -1,0 +1,22 @@
+<title>signUp</title>
+<link rel="stylesheet" href="./css/signUp.css">
+<div class="signInForm">
+    <form action="/user/createUser" class="form" method="post">
+        
+        <div class="user-name">
+            <input type="text" name="userName" required placeholder="First Name: ">
+            <input type="text" name="lastName"  placeholder="Last Name : ">
+        </div>
+        <div class="email-id">
+            <input type="text" name="userEmailId" placeholder="Email Id: ">
+        </div>
+        <div class="password">
+            <input type="text" name="userPassword" required placeholder="Password: ">
+            <input type="text" name="confirmUserPassword" required placeholder="Confirm Password: ">
+        </div>
+        <div class="submit-button">
+            <input type="submit" value="Sign Up">
+        </div>
+        
+    </form>
+</div>

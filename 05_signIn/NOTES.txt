@@ -1,0 +1,22 @@
+Cookies : when we send form with user name and password server check it's correct or not , if matches
+server send the encrypted code (may be combination of userName & password) for that user and its'
+saved by the browser and whenever browser send some request that encrypted key will also send to server
+to established identity 
+
+
+
+For Cookies Access : 
+Install cookiesParser : npm install cookie-parser
+const cookiesParser = require('cookie-parser');
+app.use(cookiesParser());                           //use before the router.use()
+
+
+Authetication Step : 
+1.) create User(sign Up)
+2.) create session ( sign In)
+3.) show details of signed in user on profile page
+4.) sign out
+
+you can add cookies from inspect > application > cookies and manually enter ('userId',10);
+To print cookies console.log(req.cookies);
+To change cookies values from server side res.cookie('userId',25);

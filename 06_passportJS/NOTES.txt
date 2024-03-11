@@ -1,0 +1,370 @@
+1.) what is passport JS?
+-> passport is an authentication middleware make for node JS .
+middleware is something which get executed before the request data reach controllers action
+
+2.) Advantage of using passport js as middleware is => you can find the which is the user making the
+  req is in that middleware then send the request further on to be action so when the req come to this
+  action the current user making the req from the cookie is already been set
+
+  To use passport
+  npm install passport
+  we are using local authentication so install
+  npm install passport-local
+
+There are a lot of passport-js strategy like passport-twitter passport-github passport-google see on website
+
+ Then we start with config -> passport.js
+
+what we are doing initially find user and store user in cookie
+But in passport.js , user is stored in  ( session-cookie ) => store all the session cookie + encrypted
+
+1.) find the user
+2.) serialized the user => to store the cookie (user.id) it's already encrypted
+3.) deserialized the user => when next request come in we need to deserialized the user (cookie.id)
+
+Q.) How user got authenticated ?
+
+using word session cookie or session enctypted cookie agian and again where are user.id is ecrypted
+and store in sessioncookie which is done automatically been done using library it is not passport
+which is doing that its express session which is going to do it
+
+-> npm install express-session
+
+we need to make middleware takes the session cookie and encrypt that
+// monogo store is used to store session cookie in the db
+app.use(session({
+    name: 'cookieName',
+    //TODO : change the secret before deployment in the production,
+    secret : 'blah_blah',
+    saveUninitialized : false,      //if identity is not established we not need to save garbage
+    resave: false,      //when user is authenticated we not need to save the cookie every time
+    cookie:{
+        maxAge: (1000 * 60 * 100),
+    },
+    store: new MongoStore({
+        mongooseConnection : db,
+        autoRemove : 'disabled'
+    },
+    function(err){
+        console.log(err || 'connect-mongodb setup ok');
+    }),
+}
+));
+
+app.use(passport.initialize()); tell app to use passport
+app.use(passport.session());    tell app to use session
+
+After this we are going to user controller createSession
+and just redirect to profile page because passport has done the work then only request pass to controller
+if user is not autheticated createsession not called becuase paspport auth is middleware
+
+router.post takes there argument 2nd is middleware there we passed this local-auth
+passport.authenticate is inbuilt function 1st argument
+local which is strategy and 2nd is failure redirect
+
+if passport authenticated the done return the user  and  userControllers comes in picture , if it return
+null failuretRecdirect come in picture
+route.post('/createSession',passport.authenticate(
+    'local',
+        {failureRedirect: '/user/signIn'},
+
+), userController.createSession);
+
+
+ Till now we are not desiaralizing the user becuase we don't need
+
+ Now we use passport to start using views, so we make two function
+
+   //CHECK IF USER IS AUTHENTICATED
+   passport.checkAuthentication  = function(req,res,next) {
+
+     //function make by us & it's middleware becuase it has all three arguments
+     //if user is signed in , then pass on the request to the next function(controller's action)
+     //isAutheticated is made by passport detect user is autheticated or not
+     if(req.isAuthenticated()){
+         return next();
+     }
+
+     //if the user is not signed in
+     return res.redirect('/user/signIn');
+   }
+
+    //set the user for views
+    //whenever user is signed in the users information is store in req.user becuase we used the user model
+    req.user is already handeled by passport
+   passport.setAuthenticatedUser = function(req,res,next){
+     if(req.isAuthenticated()){
+         //req.user contains the current signed in user from the session cookie and we are just sending this to the locals for views
+         res.locals.user = req.user;
+     }
+     next();
+   }
+
+   //Now it's time to use it , before if user is not signed it can access profile but now it can't access profle page
+   route.get('/profile',passport.checkAuthentication,userController.profile);
+
+    //but we signed 10 min before but your cookie got expired
+
+    now we set setAuthentication as middleware in index.js
+    if any request comes in these fuction called
+
+    app.use(passport.initialize());     //use passport
+    app.use(passport.session());        //use session
+
+    //if any reqest is coming in it will check if user is already there if so => the user will set in locals
+    app.use(passport.setAuthenticatedUser);
+    //user accessible in views
+    //whenever server got restarted we get log out as profile page is not accessible and it through
+    us to login page  means session data is temporary store so we use mongostore
+
+    our session cookie get reset everytime our server restart it's bad because why everytime you
+    deploy new code to production server all your user get's log out one solution to use persistance
+    storage to store session cookie in your server becuase your server is resetting telling your
+    browser to reset all the cookies so we are going to store in db  so we use mongostore and library
+    connect-mongo
+    -> npm install connect-mongo
+    const MongoStore = require('connect-mongo').(session);      requrie an argument
+
+Module used in this Lesson:
+
+1.) express-session: This module is used to create and manage sessions in Express.js applications.
+2.) passport: This module is used to authenticate users in Express.js applications.
+3.) passport-local: This module is a plugin for Passport that provides support for local authentication (i.e., authentication using username and password).
+4.) connect-mongodb-session: This module is used to store sessions in MongoDB.
+
+
+to logout req.logout() => removing the user's session cookie to remove the identity
+
+
+
+
+
+
+
+For SASS
+
+const nodeSaasMiddleware = require('node-sass-middleware');
+
+
+// see on net npm sass middleware
+app.use(nodeSaasMiddleware({
+    src: './assets/scss',        // where sass files stored
+    dest: './assests/css',       // converted files stored in
+    debug: true,                // when converting debug the code and show error, in development stage it's false
+    outputStyle: 'extended',    // convert the output file in extended not in compressed manner
+    prefix: '/css',             // whenever we access '/css/home.css'
+}));
+
+//prefix when we use <link src = "/css/home.css"  it start looking to css folder
+
+// NOTE: whenever we load the page then scss file converted to css no when server start
+            and dont forget to './'
+// TODO: till now the problem is that when we load the page scss file converted to css files it slow down the loading speed
+   TODO: we want when server start all scss file converted to css , we will do at deployment phase
+
+
+
+
+
+
+
+<---------- EXTRA -------->
+
+  //serializing user function =>  the user to decide which key is kept into the cookies 
+  passport.serializeUser(function(user,done){
+    done(null,user.id);
+  });
+
+req.user is not an inbuilt function, but it is a property
+of the Express request object that is set by middleware that handles authentication.
+
+The req.user property is set by middleware that handles authentication. 
+For example, the passport module is a popular authentication middleware for Express. 
+The passport module can be used to authenticate users using a variety of methods,
+ such as username and password, OAuth, and JWT.
+
+When a user is authenticated using passport, the req.user property will be set to 
+an object containing the user's information. This information is typically retrieved from a database.
+
+If the user is not authenticated, then the req.user property will be undefined.
+
+<-------- /EXTRA -------->
+
+
+
+DATABASE POST & COMMNETS
+1.) One of the relationship is there in database is 1:1 (1 to 1) & M:1 ( many to 1) & M:M relations.
+2.) Post and Comments has 1:M relation. 1post has many comments but 1comments not belong to multiple post
+3.) Creating Schema for Post and link user._id in database
+const mongoose = require('mongoose');
+
+    const postSchema = new mongoose.Schema({
+        content:{
+            type: String,
+            required: true,
+        },
+        user:{
+            type:mongoose.Schema.Types.ObjectId,
+            ref:'User',
+        },
+    }
+
+4.) create a controller for post creation and saving to database
+
+    const Post = require('../models/post');
+    module.exports.create = async function(req, res) {
+        try {
+            const post = await Post.create({
+                content: req.body.content,
+                user: req.user._id,
+            })
+            return res.redirect('back');
+        }
+    };
+
+
+
+5.) Display post and related user
+
+    module.exports.home = async function(req, res) {
+        try {
+            const posts = await Post.find({}).exec();
+            return res.render('home', {
+                title: "Codeial : Home",
+                posts: posts,
+            });
+    }
+
+    post = {
+            content : '',
+            user : 'user._id'
+    }
+
+     for(post of posts){
+        post. content
+        post. user          //this will give user id
+     }
+
+
+    //after populate
+
+    const posts = await Post.find({})
+                .populate('user')
+                .exec();
+
+
+     post = {
+        content : ' ',
+        user : {
+            userId : ' ',
+            userPassword : ''
+        }
+     }
+
+     for(post of posts){
+        post. content
+        post. user          //now whole user object come { id : '234dsf', name: 'arad'}
+        post.user.name      //give the name
+     }
+
+
+6.) Now we check for authentication that not everyone can create post
+    1Level if(locals.user)
+    2Level the problem with first level is that we use know the url of create post he creates a dom
+        structure of form and submit to that url to ensure that we are going to put 2 nd check we do
+        at route level check auth
+
+        route.post('/create',passport.checkAuthentication,postController.create);
+
+
+ADD COMMENTS
+if you need the object separately you need to make another schema like if i want to check all comments
+make by user one , if  we store all comments in postSchema like a commnets Array we have to go all post
+check all comments array find the user then print
+
+so we are going to make comment schema same as post schema but add user and post schema referance also
+And we are making a comment Array in post schema, to map all comment of each post to make search fast
+to find all comments of a post remember commentArray stored the id of comments of a post
+
+//Inside the post schema
+    comments:[
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'Comment',
+            }
+        ]
+
+//Adding comments to DB
+
+First we create a form with input as content and post as hidden input type with value post._id because
+controllers need that commentId to insert into the  commentArray of post schema
+
+<input type="text" name="content" placeholder="Type Here to add comment..." required >
+<input type="hidden" name="post" value="<%= post._id %>">
+
+To increase security add locals. user and in html inspect post.id can be accisble  to user becuase of input tag
+if user change this may be error or some kind of security glitch may happen to avoid that
+before add to comment database check the post id exist or not
+
+    try {
+            const post = await Post.findById(req.body.post);
+            if (post) {
+                const comment = await Comment.create({
+                    content: req.body.content,
+                    post: req.body.post,
+                    user: req.user._id
+                });
+                console.log(comment);
+                post.comments.push(comment);
+                await post.save();
+                res.redirect('/');
+            }
+    }
+
+//One more thing when we change database don't forget to save the change we change post do use post.save()
+//In Comment.create () function save is automatically called implicit
+
+//Nested Populated
+
+//when i need to populate multiple models i need to get comment and user of that comment what i am doing
+preloading or populating two models  one is comment and 2nd is user
+
+    const posts = await Post.find({})
+                .populate('user')
+                .populate({
+                    path: 'comments',
+                    populate: {
+                        path: 'user'
+                    }
+                })
+                .exec();
+
+            return res.render('home', {
+                title: "Codeial : Home",
+                posts: posts,
+            });
+
+    for printing
+
+    <% for (let comment of post.comments) { %>      //post.comments is a array
+
+                <%= comment.content %>
+                <br>
+                <small>
+                    <%= comment.user.name %>
+                </small>
+
+    <% } %>
+
+
+
+
+
+
+
+
+
+
+
+
+

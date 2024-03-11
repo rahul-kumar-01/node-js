@@ -1,0 +1,33 @@
+<html>
+    <head>
+        <title>
+            <%=title%>
+
+<!-- or locals.title because res has locals as a key in which when we pass it's stored as a key like title as a key -->
+
+
+        </title>
+        <style>
+
+        </style>
+    </head>
+    <body>
+        <h1>Home Ejs</h1>
+
+    <ul>
+        <% for(let i = 1;i<10;++i){ %>
+        <li>
+           <%= i %>
+        </li>
+        <%}%>
+    </ul>
+
+    <%if (true){%>
+        <h1>It's True</h1>
+    <%}else{ %>
+        <p> It's False</p>
+    <%}%>
+
+
+    </body>
+</html>

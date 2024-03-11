@@ -1,0 +1,187 @@
+For SASS
+
+
+const nodeSaasMiddleware = require('node-sass-middleware');
+
+
+
+app.use(nodeSaasMiddleware({
+    src: './assets/scss',        // where sass files stored 
+    dest: './assests/css',       // converted files stored in
+    debug: true,                // when converting debug the code and show error, in development stage it's false
+    outputStyle: 'extended',    // convert the output file in extended not in compressed manner
+    prefix: '/css',             // whenever we access '/css/home.css' 
+}));
+
+// NOTE: whenever we load the page then scss file converted to css and dont forget to './'
+
+
+For Layout:
+
+
+//for layout install npm install express-ejs-layouts
+//use it by express and come in work before the route work start because layout updated before controller
+//extract sytle and script from subpages into layout 
+
+app.set('layout extractStyles',true);
+app.set('layout extractScripts',true);
+
+const expressLayouts = require('express-ejs-layouts');
+app.use(expressLayouts);
+// after using this layout.ejs(name is same) apply to all ejs file inside the body tag 
+
+For Flash 
+1.) Set up the library  'Flash' ( npm install connect-flash  )     
+2.) use after where session was set up => (cookiee-setup);
+3.) set up some message in user controller
+4.) to pass this flash message to ejs template we created a middleware which fetch everything from req.flash 
+  & put into the locals
+5.) finally use this middleware and access in templates
+6.) we are going to access or print flash form layout.ejs , locals has flash so 
+
+   <% flash.success && flash.success.length > 0 {%>
+        <%= flash.success %>
+   <% } %>
+
+//code
+
+
+
+//Noty Js -> used to look our notification looks better pop in pop out 
+// include from cdn noty min.css & min.js ( min means compressed files);
+
+
+//JSON 
+whenever we post whole page got refreshed that we don't want. To overcome that we are going 
+to in corporate ajax, whenever we submit the form for creating post i submit via ajax get 
+something in response which is in form of json and appended into our page.
+1.)  we are using jquey ajax for that we have to include cdn for jquey ajax in layout becuase 
+    we want all other pages to use that 
+2.) we need to create Js file which fetches the data from the form and send in json format to the 
+    action whenever i am submitting the form to create a new post it couldn't submited via post
+    we could be submitted via jquery ajax 
+3.) Making the home_post.js in assests/js/home_post.js and include that in home.ejs now my script is loaded
+4.) For creating a post we have to make two function 1st fn which handle submission of the post
+    2nd the function which receive the data of created post and display over it
+
+    1st function -> function which data to controller action
+
+
+
+//File Upload 
+1.) we store file in cloud or local storage but the address to the file we store in database 
+2.) npm install multer
+3.) update the " update form of user "  see documentation
+    The changes are : =>
+
+    <form action="/user/update/<%=profile_user.id%>" enctype="multipart/form-data" method="post">
+            <input type="file" name="avatar" placeholder="Profile Picture">
+    </form>
+
+    a.) multipart/form-data  to submit file & also encrypted  the data and can't read directly
+
+
+3.) set up multer for avtar in userSchema.js
+
+    //multer
+    const path = require('path');
+    const multer = require('multer');
+    const AVATAR_PATH = path.join('/uploads/users/avatars');
+
+    avatar:{
+            type: String,       //database just stored the path of the file so we create a fieldname to userSchema
+        }
+
+    //from documentation
+    let storage = multer.diskStorage({
+        destination:function(req,res,cb){                       //where the file is going to store
+            cb(null,path.join(__dirname,'..',AVATAR_PATH));     //path .join convert address to string form
+        },
+        filename: function(req,file,cb){            // if name of file is same we append => current time which is changed in millisecond
+            cb(null,file.fieldname+'-'+Date.now());  //fieldname is avatar every file name is stored as avatar_date.now()
+        }
+    })
+
+    //static function => which can call on overall class , make there function pulblically available
+
+    userSchema.statics.uploadedAvatar = multer({storage:storage}).single('avatar');
+
+    // store a single file of filename avatar & link multer storage to storage key
+    //to access this function
+    // userSchema.uploadedAvatar;
+
+    userSchema.statics.avatarPath = AVATAR_PATH;
+
+    we make this static function because we can't read req.body  because of multipart/form-data encryption
+    these static file has req as argument so we can access req.body
+
+    //Now update controllers
+
+    module.exports.update = async function(req, res) {
+
+        if(req.user.id == req.params.id){
+            try{
+                let user = await User.findById(req.params.id);
+                User.uploadedAvatar(req,res,function(err){
+                    if(err){
+                        console.log("***Multer Errr : err");
+                    }
+                    // console.log(req.file);
+
+                    user.userName = req.body.userName;
+                    user.userEmailId = req.body.userEmailId;
+
+                    if(req.file){
+                        // this is saving the path of the upploaded file into the avatar field in the user
+                        user.avatar = User.avatarPath + '/' + req.file.filename;
+                    }
+                    user.save();
+                    return res.redirect('back');
+                })
+            }catch(err){
+                req.flash('error',err);
+                return req.redirect('back');
+            }
+        }
+      };
+
+      in profile.ejs
+      <img src=" <%= user.avatar %>" alt=" <%= user.userName %>" width="50px" height="50px">
+      the error will show in network
+      Cannot GET /uploads/users/avatars/avatar-1695555983283
+
+      so we need to create a route so we are going to write  index.js
+      app.use('/uploads',express.static(__dirname+'/uploads'));     //find the folder using express.static
+
+
+    Everytime we update the avatar the destination got stored and previous destination not get updated
+    replacing the avatar or remving the avatar we are going to remove it
+
+    First we have to import fs and path
+
+        const fs = require('fs');
+        const path = require('path');
+
+    And update the update controllers
+
+        if(req.file){
+
+        //if file already exist remove the previous file
+            if(user.avatar){
+                fs.unlinkSync(path.join(__dirname,'..',user.avatar));  //user.avatar = /uploads/.....
+            }
+
+        // this is saving the path of the uploaded file into the avatar field in the user
+            user.avatar = User.avatarPath + '/' + req.file.filename;
+        }
+        user.save();
+
+    Again problem with this is if i delete all the file from uploads then also user.avatar has the path
+    when we access user.avatar there is no file then error will throw
+
+
+    TODO: to resolve the error , put the check what we can upload if anyone upload .js file it may delete code from
+    TODO: your system, size,extension by using multer
+
+
+

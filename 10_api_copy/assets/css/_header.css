@@ -1,0 +1,30 @@
+
+.signInLink,.signUpLink{
+    text-decoration: none;
+    color:rgb(94, 93, 93);
+    margin:1rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+}
+.header{
+    display: flex;
+    height: auto;
+    background-color: pink;
+    justify-content: flex-end;
+    /* position: fixed; */
+    width: 100%;
+
+}
+.codeial{
+    margin:1rem;
+    margin-right: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: slateblue;
+
+}

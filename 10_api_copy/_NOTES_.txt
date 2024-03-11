@@ -1,0 +1,320 @@
+For SASS
+
+
+const nodeSaasMiddleware = require('node-sass-middleware');
+
+
+
+app.use(nodeSaasMiddleware({
+    src: './assets/scss',        // where sass files stored 
+    dest: './assests/css',       // converted files stored in
+    debug: true,                // when converting debug the code and show error, in development stage it's false
+    outputStyle: 'extended',    // convert the output file in extended not in compressed manner
+    prefix: '/css',             // whenever we access '/css/home.css' 
+}));
+
+// NOTE: whenever we load the page then scss file converted to css and dont forget to './'
+
+
+For Layout:
+
+
+//for layout install npm install express-ejs-layouts
+//use it by express and come in work before the route work start because layout updated before controller
+//extract sytle and script from subpages into layout 
+
+app.set('layout extractStyles',true);
+app.set('layout extractScripts',true);
+
+const expressLayouts = require('express-ejs-layouts');
+app.use(expressLayouts);
+// after using this layout.ejs(name is same) apply to all ejs file inside the body tag 
+
+For Flash 
+1.) Set up the library  'Flash' ( npm install connect-flash  )     
+2.) use after where session was set up => (cookiee-setup);
+3.) set up some message in user controller
+4.) to pass this flash message to ejs template we created a middleware which fetch everything from req.flash 
+  & put into the locals
+5.) finally use this middleware and access in templates
+6.) we are going to access or print flash form layout.ejs , locals has flash so 
+
+   <% flash.success && flash.success.length > 0 {%>
+        <%= flash.success %>
+   <% } %>
+
+//code
+
+
+
+//Noty Js -> used to look our notification looks better pop in pop out 
+// include from cdn noty min.css & min.js ( min means compressed files);
+
+
+//JSON 
+whenever we post whole page got refreshed that we don't want. To overcome that we are going 
+to in corporate ajax, whenever we submit the form for creating post i submit via ajax get 
+something in response which is in form of json and appended into our page.
+1.)  we are using jquey ajax for that we have to include cdn for jquey ajax in layout becuase 
+    we want all other pages to use that 
+2.) we need to create Js file which fetches the data from the form and send in json format to the 
+    action whenever i am submitting the form to create a new post it couldn't submited via post
+    we could be submitted via jquery ajax 
+3.) Making the home_post.js in assests/js/home_post.js and include that in home.ejs now my script is loaded
+4.) For creating a post we have to make two function 1st fn which handle submission of the post
+    2nd the function which receive the data of created post and display over it
+
+    1st function -> function which data to controller action
+
+
+
+//File Upload 
+1.) we store file in cloud or local storage but the address to the file we store in database 
+2.) npm install multer
+3.) update the " update form of user "  see documentation
+    The changes are : =>
+
+    <form action="/user/update/<%=profile_user.id%>" enctype="multipart/form-data" method="post">
+            <input type="file" name="avatar" placeholder="Profile Picture">
+    </form>
+
+    a.) multipart/form-data  to submit file & also encrypted  the data and can't read directly
+
+
+3.) set up multer for avtar in userSchema.js
+
+    //multer
+    const path = require('path');
+    const multer = require('multer');
+    const AVATAR_PATH = path.join('/uploads/users/avatars');
+
+    avatar:{
+            type: String,       //database just stored the path of the file so we create a fieldname to userSchema
+        }
+
+    //from documentation
+    let storage = multer.diskStorage({
+        destination:function(req,res,cb){                       //where the file is going to store
+            cb(null,path.join(__dirname,'..',AVATAR_PATH));     //path .join convert address to string form
+        },
+        filename: function(req,file,cb){            // if name of file is same we append => current time which is changed in millisecond
+            cb(null,file.fieldname+'-'+Date.now());  //fieldname is avatar every file name is stored as avatar_date.now()
+        }
+    })
+
+    //static function => which can call on overall class , make there function pulblically available
+
+    userSchema.statics.uploadedAvatar = multer({storage:storage}).single('avatar');
+
+    // store a single file of filename avatar & link multer storage to storage key
+    //to access this function
+    // userSchema.uploadedAvatar;
+
+    userSchema.statics.avatarPath = AVATAR_PATH;
+
+    we make this static function because we can't read req.body  because of multipart/form-data encryption
+    these static file has req as argument so we can access req.body
+
+    //Now update controllers
+
+    module.exports.update = async function(req, res) {
+
+        if(req.user.id == req.params.id){
+            try{
+                let user = await User.findById(req.params.id);
+                User.uploadedAvatar(req,res,function(err){
+                    if(err){
+                        console.log("***Multer Errr : err");
+                    }
+                    // console.log(req.file);
+
+                    user.userName = req.body.userName;
+                    user.userEmailId = req.body.userEmailId;
+
+                    if(req.file){
+                        // this is saving the path of the upploaded file into the avatar field in the user
+                        user.avatar = User.avatarPath + '/' + req.file.filename;
+                    }
+                    user.save();
+                    return res.redirect('back');
+                })
+            }catch(err){
+                req.flash('error',err);
+                return req.redirect('back');
+            }
+        }
+      };
+
+      in profile.ejs
+      <img src=" <%= user.avatar %>" alt=" <%= user.userName %>" width="50px" height="50px">
+      the error will show in network
+      Cannot GET /uploads/users/avatars/avatar-1695555983283
+
+      so we need to create a route so we are going to write  index.js
+      app.use('/uploads',express.static(__dirname+'/uploads'));     //find the folder using express.static
+
+
+    Everytime we update the avatar the destination got stored and previous destination not get updated
+    replacing the avatar or remving the avatar we are going to remove it
+
+    First we have to import fs and path
+
+        const fs = require('fs');
+        const path = require('path');
+
+    And update the update controllers
+
+        if(req.file){
+
+        //if file already exist remove the previous file
+            if(user.avatar){
+                fs.unlinkSync(path.join(__dirname,'..',user.avatar));  //user.avatar = /uploads/.....
+            }
+
+        // this is saving the path of the uploaded file into the avatar field in the user
+            user.avatar = User.avatarPath + '/' + req.file.filename;
+        }
+        user.save();
+
+    Again problem with this is if i delete all the file from uploads then also user.avatar has the path
+    when we access user.avatar there is no file then error will throw
+
+
+    TODO: to resolve the error , put the check what we can upload if anyone upload .js file it may delete code from
+    TODO: your system, size,extension by using multer
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <-----------            API             ---------->
+
+
+how to do we make api ( simple way you can say return json )
+whenever we want two devices to communicate with very small resorses we used api ( application programming interface )
+If you are using api two computers are communicating using json object(key & value)
+Why are we using this , why not we are sending html,css ,js file?
+Becuase we want your communication fast
+
+Let's take A -> server & B -> client side
+what just usually happens that we store the design elements (way the element should look on the page)
+and what data to be seem is via HTTP Request(api)
+
+api are predominantly used in industry these days whenever you are making website in a major company
+Company usually prefer you pick a frontend framework set it up and sever side base on nodeJs and
+nodeJs interact with api ( that is json ) and frontend recogined it shows the data and store the desing
+
+The PostMan
+Through api are generally used when we are interacting with  frontend framework. But wont't have a
+frontend framework yes you can access that api using browser but we will use a tool called postman
+it will act as a frontend framework and we also set up authetication over it and see how it work
+Not on postman but handle authentication request and send authenticated request using postman like
+we are using with browser
+
+set up postman
+
+
+setting up the directory structure
+so the first part of creating api is setting up our directory structure so that our code which send
+the response and accept other request in that api format  is there in seprate file not in normal
+controllers file and routes are also different first we seprate our code or distribute
+
+Now this controllers folder will have an api folder which will have all those controllers which are
+interact in json form the response the request everything in json will be there now if there are multiple
+version of api we are going to talk about later.
+
+Similarly route have also api folder becuase route like localhost:8000, 3000 like that whatever port
+we are running on , codeial / api / version / name of controllers
+
+api have it's own index just like route index.js ( which require all routes and tell root index.js)
+ and tell commnet post user are three routes require all this route and tell root index and tell
+/user /profile /
+
+then route index.js file knows about this api
+
+
+outmost index.js route find api , api index find v1,  v1 index.js found post.js which refer this post_api
+
+One Method to autheticate is token Generation ( Demerit)
+1.) 5 devices -> 5 token
+2.) stored in db & pc
+
+JWT -> json web token no need to store
+Token has 3 parts
+1.) Header -> What algorithm is used to generate token
+2.) Payload -> actual info is encrypted like userName & password & also store it's exipry so need to store in db
+3.) Signature ->  created by hashing or applying alog on both Header & Payload
+
+
+Header(List of Keys)  has a key called authorization (List of Keys) has a key called bearer that has jwt token
+
+npm install jsonwebtoken -> used to generate the token and password is capable to decrypt the encrypted token
+
+credential are for auth two
+Auth one -> you generated the access token you kept and using it until that token gets expired
+Auth two -> you only get the desired information your token has limited set of permission and your token can any
+            time revoke by google
+
+Steps to start ->
+1.) go to console.developers.google.com
+2.) create a new project
+3.) click on credential and create credential
+4.) click oath id config auth screen
+
+
+    <------     HOW IT WORK        -------->
+
+user click on signUp with google then google pop will open user put username and password and google verify user identity
+from her database and if user not found it's redirect to back if  user auth successfully then google return a
+callback url with some data of user to browser which call another function
+to the browser which is going to interact with server and check the email to database if it's there it's fine then we
+let user to signIn if not exist then we create a user in database
+
+( callback url refering to an action or a part where passport is operating via route and using that route
+my server gets the data and check user is there or not )
+
+
+       <------   MAIL + DELAYED JOBS    ------->
+
+
+HOW IT WORKS
+
+1.) we are using a mailing server like google, yahoo, zoho, ( sendgrid, Sendinblue are dedicates services they allow to send mail
+     in mass or bulk & analyse there activities )  and it will send email to remote users and send response that mail send or not
+
+2.) The server request mailing server similar to using api but uses a different protocol (SMTP) SIMPLE MAIL TRANSFER PROTOCOL
+    generally is http smtp defing how both interact becuase your mail contains some attachment and it mush be enctypted
+    smtp previously used SSL SECURE SOCKET LAYER but newwe version it's TLS TRANSPORT LAYER SECURITY
+
+SETUP
+1.) require module nodemailer
+2.) config
+3.) set up mailer file -> which have function to send mail for predefine action like commnet on post
+4.) send mail with templates
+5.) send
+
+
+
+Workers
+npm install kue
+brew install redis
+to check redis server is running or not -> redis-cli-ping it return pong
+if not -> redis-server
+
+set kue in config-> kue.js
+kue is group of similar jobs
+
+
+to see kue work visually
+./node_modules/kue/bin/kue-dashboard
